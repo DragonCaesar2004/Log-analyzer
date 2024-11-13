@@ -8,6 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+requests = "^2.32.3"
 
 
 [tool.poetry.dev-dependencies]
@@ -21,6 +22,7 @@ pytest-mock = "*"
 pytest-repeat = "*"
 pytest-asyncio = "*"
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.poetry.scripts]
+analyzer = "hello:hi"
+
+
