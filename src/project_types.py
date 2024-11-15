@@ -1,10 +1,14 @@
 from typing import NamedTuple
+from enum import Enum
 
+class AdressTypes(Enum):
+    URL='url'
+    FILE='file'
 
+        
 class InputArgs(NamedTuple):
     # TODO
-    urls: list[str]
-    files: list[str]
+    adresses: ...
     from_date : ...# Optional
     to_date : ...# Optional
     format : ...# Optional

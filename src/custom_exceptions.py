@@ -38,7 +38,7 @@ class InvalidFormatStyleError(ValueError):
 class InvalidFilterFieldError(ValueError):
     '''Вызывается, если указано неизвестное поле фильтрации.'''
     def __init__(self, allowed_fields: list[str]):
-        super().__init__(f'Ошибка: выберите одно из следующих полей для фильтрации: {', '.join(allowed_fields)}')
+        super().__init__(f'Ошибка: выберите одно из следующих полей для фильтрации: {', '.join(field.value for field in allowed_fields)}')
 
 class MissingFilterFieldError(ValueError):
     '''Вызывается, если значение фильтра указано без поля.'''

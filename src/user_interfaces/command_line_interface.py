@@ -9,8 +9,9 @@ from src.custom_exceptions import UnknownArgumentsError, MissingPathError, Inval
 
 
 from src.user_interfaces.base_user_interface import UserInterface
-from src.project_types import InputArgs
-from src.config import formats, log_fields, one_argument_flags
+from src.project_types import InputArgs, AdressTypes
+from src.config import LogFields
+from src.config import formats, one_argument_flags
 
 class CommandLineInterface(UserInterface):
 
@@ -47,11 +48,10 @@ class CommandLineInterface(UserInterface):
     def _validate_args(self, args: argparse.Namespace, unknown_args: list[str]) -> InputArgs:
         """Валидирует аргументы заданные юзером"""
         self._validate_unknown_args(unknown_args)
-        self._check_missing_params(args)
-        #  проверить в цикле флаги на наличе определённого числа параметров
-        
+        self._check_missing_params(args)        
         self._check_one_argument(args)
-        urls, files = self._validate_path(args.path)
+
+        adresses = self._validate_path(args.path)
         from_date = self._validate_datetime_string(args.from_date) if args.from_date else None
         to_date = self._validate_datetime_string(args.to_date) if args.to_date else None
         self._validate_date_order(from_date,to_date)
@@ -61,28 +61,28 @@ class CommandLineInterface(UserInterface):
         filter_field = self._validate_filter_field(args.filter_field) if args.filter_field else None
         filter_value = self._validate_filter_value(filter_field, args.filter_value) if filter_field else None
         
-        return InputArgs(urls=urls, files=files, from_date=from_date, to_date=to_date, format=format, filter_field=filter_field, filter_value=filter_value)
+        return InputArgs(adresses=adresses, from_date=from_date, to_date=to_date, format=format, filter_field=filter_field, filter_value=filter_value)
 
     def _validate_unknown_args(self, unknown_args: list[str]) -> None:
         """Проверяет наличие неизвестных аргументов"""
         if len(unknown_args):
             raise UnknownArgumentsError(unknown_args)
 
-    def _validate_path(self, paths: Optional[list[str]]) -> tuple[list[str], list[str]]:
+    def _validate_path(self, paths: Optional[list[str]]) :
         """Разделяет на 2 списка url и файлы. Возвращает их 
         Эта функция предназначена для проверки, является ли заданный путь URL-адресом, 
         имеющим допустимый протокол. """
-        if not paths:
+        if not paths :
             raise MissingPathError()
-        urls, files = [], []
-        for path in paths:
-            if self._is_url(path):
-                urls.append(path)
-            elif self._is_file(path):
-                files.append(path)
+        adresses = []
+        for adress in paths:
+            if self._is_url(adress):
+                adresses.append((AdressTypes.URL, adress))
+            elif self._is_file(adress):
+                adresses.append((AdressTypes.FILE, adress))
             else:
-                raise InvalidPathError(path)
-        return urls, files
+                raise InvalidPathError(adress)
+        return adresses
 
     def _is_file(self, path: str) -> bool:
         """Проверяет вляется ли указанный локальный адрес файлом"""
@@ -116,9 +116,9 @@ class CommandLineInterface(UserInterface):
     def _validate_filter_field(self, filter_field: str) -> None:
         """Проверяет на наличие введеного фильтра в списке всех полей лога"""
         filter_field_str = filter_field[0]
-        if filter_field_str not in log_fields:
-            raise InvalidFilterFieldError( log_fields)
-        return filter_field_str
+        if filter_field_str not in LogFields:
+            raise InvalidFilterFieldError( LogFields)
+        return LogFields(filter_field_str)
 
     def _validate_filter_value(self, filter_field: str, filter_value: Optional[list[str]]) -> None:
         """Проверка наличия значения у поля """
