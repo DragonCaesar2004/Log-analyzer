@@ -3,7 +3,7 @@ import platform
 
 from src.user_interfaces.command_line_interface import CommandLineInterface
 from src.manager import Manager
-from src.project_types import InputArgs
+
 
 logging.basicConfig()
 logging.getLogger().setLevel(logging.INFO)
@@ -20,7 +20,7 @@ def main() -> None:
         manager.create_report()
     except Exception as e:
         print(e)
-    
+
 
 if __name__ == "__main__":
     main()
