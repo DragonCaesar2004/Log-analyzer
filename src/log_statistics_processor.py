@@ -7,12 +7,12 @@ from src.project_types import LogStatistics
 
 class LogStatisticsProcessor:
 
-    def __init__(self):
-        self.logs_count = 0
-        self.resource_frequency = Counter()
-        self.status_code_frequency = Counter()
-        self.weights_all_logs = []  # измеряется в байтах
-        self.unique_users = set()
+    def __init__(self)-> None:
+        self.logs_count:int = 0
+        self.resource_frequency:Counter[str] = Counter()
+        self.status_code_frequency:Counter[int] = Counter()
+        self.weights_all_logs:list[int] = []  # измеряется в байтах
+        self.unique_users:set[str] = set()
 
     def calculate_statistics(self, log_object: LogObject) -> None:
         self.logs_count += 1
@@ -21,16 +21,19 @@ class LogStatisticsProcessor:
         self.weights_all_logs.append(log_object.body_bytes_sent)
         self.unique_users.add(log_object.ip_addr)
 
-    def _calculate_percentile(self):
+    def _calculate_percentile(self)-> int:
+        if len(self.weights_all_logs)==0: return -1 # Обозначение, что перцентиля не существует  
         self.weights_all_logs.sort()
         percentile_index = int(
             percentile_ratio * (len(self.weights_all_logs) - 1)
         )  # Вычисляем индекс для 95% перцентиля
+
         percentile_value = self.weights_all_logs[percentile_index]
         return percentile_value
 
     def get_statistics(self) -> LogStatistics:
         percentile = self._calculate_percentile()
+        
         return LogStatistics(
             logs_count=self.logs_count,
             resource_frequency=self.resource_frequency,
@@ -39,5 +42,5 @@ class LogStatisticsProcessor:
             unique_users_number=len(self.unique_users),
             average_response_size=round(
                 sum(self.weights_all_logs) / self.logs_count, 2
-            ),
+            ) if self.logs_count else -1,
         )

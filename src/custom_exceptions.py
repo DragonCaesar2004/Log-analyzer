@@ -1,5 +1,6 @@
 import requests
-
+from typing import Iterable
+from src.project_types import LogFields
 
 class UnknownArgumentsError(Exception):
     """Вызывается, если были переданы неизвестные аргументы."""
@@ -38,8 +39,8 @@ class InvalidDateFormatError(ValueError):
 class FlagWithoutValueError(Exception):
     """Вызывается, если пользователь использовал флаг без параметров,хотя они нужны"""
 
-    def __init__(self, flag_name):
-        super().__init__(f"Использован флаг {flag_name}, но без параметров")
+    def __init__(self, flag_name:str):
+        super().__init__(f"Использован флаг {flag_name:str}, но без параметров")
 
 
 class InvalidDateValueError(ValueError):
@@ -61,7 +62,7 @@ class InvalidFormatStyleError(ValueError):
 class InvalidFilterFieldError(ValueError):
     """Вызывается, если указано неизвестное поле фильтрации."""
 
-    def __init__(self, allowed_fields: list[str]):
+    def __init__(self, allowed_fields: Iterable[LogFields]):
         super().__init__(
             f"Ошибка: выберите одно из следующих полей для фильтрации: {', '.join(field.value for field in allowed_fields)}"
         )
@@ -130,3 +131,9 @@ class NoFilesFoundError(Exception):
 class ReadFileError(ValueError):
     def __init__(self):
         super().__init__("Произошла ошибка при чтении файла логов")
+
+class ConnectionError(Exception):
+    def __init__(self, status_code: int):
+        super().__init__(f'(
+                    f"Получен неверный код состояния: {status_code}"
+                )')

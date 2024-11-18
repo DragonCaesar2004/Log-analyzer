@@ -27,3 +27,6 @@ pytest-asyncio = "*"
 analyzer = "hello:hi"
 
 
+[tool.poetry.group.dev.dependencies]
+types-requests = "^2.32.0.20241016"
+

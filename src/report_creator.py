@@ -5,7 +5,7 @@ from src.config import percentile_ratio
 
 class BaseReportCreator():
 
-    def __init__(self, input_args: InputArgs, log_stats: LogStatistics):
+    def __init__(self, input_args: InputArgs, log_stats: LogStatistics)->None:
         self.general_info_headers = ["Метрика", "Значение"]
 
         # Извлечение адресов из входных аргументов
@@ -39,11 +39,11 @@ class BaseReportCreator():
                 ),
             ],
             ["Количество запросов", f"{log_stats.logs_count:,}".replace(",", "_")],
-            ["Средний размер ответа", f"{log_stats.average_response_size}b"],
-            [f"{percentile_ratio*100}p размера ответа", f"{log_stats.percentile}b"],
+            ["Средний размер ответа", f"{str(log_stats.average_response_size)+'b' if log_stats.average_response_size>=0 else '-'}"],
+            [f"{percentile_ratio*100}p размера ответа", f"{str(log_stats.percentile) +'b' if log_stats.percentile>=0 else '-' }"],
             [
-                "Соотношение успешных и неуспешных запросов",
-                f"{self.successful_requests} успешных / {self.unsuccessful_requests} неуспешных",
+                "Соотношение успешных запросов к общему количеству",
+                f"{self.successful_requests} успешных / {log_stats.logs_count} всего",
             ],
             [
                 "Количество уникальных посетителей",
@@ -61,7 +61,7 @@ class BaseReportCreator():
             for status_code, count in log_stats.status_code_frequency.items()
         ]
 
-    def create_report(self, generate_table_method, header_symb: str):
+    def create_report(self, generate_table_method, header_symb: str)->str:
         content = f"{header_symb} Общая информация\n\n"
         # Добавление таблицы общей информации
         content += generate_table_method(

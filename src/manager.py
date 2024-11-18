@@ -10,7 +10,7 @@ from src.report_creator import BaseReportCreator
 
 class Manager:
 
-    def __init__(self, input_args: InputArgs):
+    def __init__(self, input_args: InputArgs)-> None:
         self.input_args = input_args
         self.log_statistics_processor = LogStatisticsProcessor()
 
@@ -27,8 +27,9 @@ class Manager:
             for log_object in log_stream(adress_value):
                 if self._check_filter(log_object):
                     self.log_statistics_processor.calculate_statistics(log_object)
-
+        
         log_statistics = self.log_statistics_processor.get_statistics()
+        
         report_creator = BaseReportCreator(self.input_args, log_statistics)
         match self.input_args.format:
             case FormatTypes.MARKDOWN.value:
@@ -41,7 +42,7 @@ class Manager:
 
             case _:
                 assert_never(self.input_args.format)
-
+        
         content_file = report_creator.create_report(generate_table_method, header_symb)
 
         self._write_to_file(content_file, f"report.{self.input_args.format}")
@@ -64,6 +65,6 @@ class Manager:
 
         return all(conditions)
 
-    def _write_to_file(self, content: str, filename: str):
+    def _write_to_file(self, content: str, filename: str)->None:
         with open(filename, "w", encoding="utf-8") as file:
             file.write(content)

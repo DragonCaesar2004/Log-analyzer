@@ -15,13 +15,14 @@ from src.custom_exceptions import (
     InvalidFormatStyleError,
     InvalidFilterFieldError,
     MissingFilterFieldError,
-    EmptyFilterValueError,
     DateOrderError,
+    EmptyFilterValueError,
     EmptyArgumentError,
     MoreOneArgumentError,
     DeployFilePatternError,
 )
 from glob import glob
+import pytest
 
 from src.user_interfaces.base_user_interface import UserInterface
 from src.project_types import InputArgs, AdressTypes, FormatTypes
@@ -30,7 +31,7 @@ from src.config import LogFields, one_argument_flags
 
 class CommandLineInterface(UserInterface):
 
-    def __init__(self):
+    def __init__(self)->None:
         self.parser = argparse.ArgumentParser(
             prog="Анализатор логов", description="Описание ДОБАВИТЬ"
         )
@@ -55,7 +56,7 @@ class CommandLineInterface(UserInterface):
             "--filter-value", nargs="*", help="Значение поля для фильтрации"
         )
 
-    def get_init_data(self) -> InputArgs | Exception:
+    def get_init_data(self) -> InputArgs:
         """
         Анализирует и проверяет аргументы командной строки.
 
@@ -80,18 +81,18 @@ class CommandLineInterface(UserInterface):
         self._validate_unknown_args(unknown_args)
         self._check_missing_params(args)
         self._check_one_argument(args)
-
+         
         paths = self._deploy_file_paths(args.path)
-        paths = self._validate_path(paths)
+        validated_paths = self._validate_path(paths)
 
         from_date = (
             self._validate_datetime_string(args.from_date) if args.from_date else None
         )
         to_date = self._validate_datetime_string(args.to_date) if args.to_date else None
         self._validate_date_order(from_date, to_date)
-
-        format = self._validate_format_style(args.format) if args.format else None
-
+        
+        format = self._validate_format_style(args.format) 
+        
         filter_field = (
             self._validate_filter_field(args.filter_field)
             if args.filter_field
@@ -99,12 +100,10 @@ class CommandLineInterface(UserInterface):
         )
         filter_value = (
             self._validate_filter_value(filter_field, args.filter_value)
-            if filter_field
-            else None
         )
-
+        
         return InputArgs(
-            paths=paths,
+            paths=validated_paths,
             from_date=from_date,
             to_date=to_date,
             format=format,
@@ -117,7 +116,7 @@ class CommandLineInterface(UserInterface):
         if len(unknown_args):
             raise UnknownArgumentsError(unknown_args)
 
-    def _deploy_file_paths(self, paths):
+    def _deploy_file_paths(self, paths: list[str])-> list[str]:
         urls = []
         files = []
         file_patterns = []
@@ -140,14 +139,14 @@ class CommandLineInterface(UserInterface):
 
         return files + urls
 
-    def _validate_path(self, paths: Optional[list[str]]):
+    def _validate_path(self, paths: list[str]) -> list[tuple[AdressTypes, str]]:
         """Разделяет на 2 списка url и файлы. Возвращает их
         Эта функция предназначена для проверки, является ли заданный путь URL-адресом,
         имеющим допустимый протокол."""
-
+         
         if not paths:
             raise MissingPathError()
-        validated_paths = []
+        validated_paths :list[tuple[AdressTypes, str]]= []
         for path in paths:
             if self._is_url(path):
                 validated_paths.append((AdressTypes.URL, path))
@@ -155,6 +154,7 @@ class CommandLineInterface(UserInterface):
                 validated_paths.append((AdressTypes.FILE, path))
             else:
                 raise InvalidPathError(path)
+        
         return validated_paths
 
     def _is_file(self, path: str) -> bool:
@@ -178,14 +178,17 @@ class CommandLineInterface(UserInterface):
         except ValueError:
             raise InvalidDateValueError()
 
-    def _validate_format_style(self, format: str):
+    def _validate_format_style(self, format: str) -> FormatTypes:
         """Проверяет на наличие введеного формата в списке доступных стилей"""
+        if format is None:
+            return FormatTypes.MARKDOWN.value # Markdown значение по умолчанию
         format_str = format[0]
+
         if format_str not in FormatTypes:
             raise InvalidFormatStyleError([format.value for format in FormatTypes])
-        return FormatTypes(format_str).value
+        return FormatTypes(format_str)
 
-    def _validate_filter_field(self, filter_field: str) -> None:
+    def _validate_filter_field(self, filter_field: str) ->LogFields:
         """Проверяет на наличие введеного фильтра в списке всех полей лога"""
         filter_field_str = filter_field[0]
         if filter_field_str not in LogFields:
@@ -193,16 +196,19 @@ class CommandLineInterface(UserInterface):
         return LogFields(filter_field_str)
 
     def _validate_filter_value(
-        self, filter_field: str, filter_value: Optional[list[str]]
-    ) -> None:
+        self, filter_field: Optional[LogFields], filter_value: list[str]
+    ) -> list[str]:
         """Проверка наличия значения у поля"""
-        if not filter_field:
-            raise MissingFilterFieldError()
-        if not filter_value:
+        if filter_field is None and filter_value is None:
+            return None
+        if filter_value is None:
             raise EmptyFilterValueError()
+
+        if filter_field  is None and filter_value :
+            raise MissingFilterFieldError()
         return filter_value
 
-    def _validate_date_order(self, start_date: datetime, end_date: datetime):
+    def _validate_date_order(self, start_date: Optional[datetime], end_date: Optional[datetime])->None:
         """
         Проверяет, что start_date раньше end_date.
 
@@ -213,14 +219,14 @@ class CommandLineInterface(UserInterface):
         if start_date and end_date and start_date > end_date:
             raise DateOrderError()
 
-    def _check_missing_params(self, args):
+    def _check_missing_params(self, args: argparse.Namespace) -> None:
         for arg_name, arg_value in vars(args).items():
             if arg_value is None:
                 continue
             if len(arg_value) == 0:
                 raise EmptyArgumentError(arg_name)
 
-    def _check_one_argument(self, args):
+    def _check_one_argument(self, args: argparse.Namespace)-> None:
         for arg_name, arg_value in vars(args).items():
             if arg_value is None:
                 continue

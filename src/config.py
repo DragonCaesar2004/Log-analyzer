@@ -1,6 +1,6 @@
 from enum import Enum
 
-percentile_ratio = 0.95
+percentile_ratio:float = 0.95 
 
 one_argument_flags = ("from_date", "to_date", "format", "filter_field")
 
