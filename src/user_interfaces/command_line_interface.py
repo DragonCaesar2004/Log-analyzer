@@ -22,18 +22,17 @@ from src.custom_exceptions import (
     DeployFilePatternError,
 )
 from glob import glob
-import pytest
 
 from src.user_interfaces.base_user_interface import UserInterface
 from src.project_types import InputArgs, AdressTypes, FormatTypes
-from src.config import LogFields, one_argument_flags
+from src.config import LogFields, one_argument_flags,description
 
 
 class CommandLineInterface(UserInterface):
 
     def __init__(self)->None:
         self.parser = argparse.ArgumentParser(
-            prog="Анализатор логов", description="Описание ДОБАВИТЬ"
+            prog="Анализатор логов", description=description,formatter_class=argparse.RawDescriptionHelpFormatter  
         )
         self.parser.add_argument(
             "-p", "--path", nargs="*", help="Путь: адрес URL или локального файла"
@@ -56,7 +55,7 @@ class CommandLineInterface(UserInterface):
             "--filter-value", nargs="*", help="Значение поля для фильтрации"
         )
 
-    def get_init_data(self) -> InputArgs:
+    def get_user_data(self) -> InputArgs:
         """
         Анализирует и проверяет аргументы командной строки.
 

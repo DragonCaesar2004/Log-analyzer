@@ -15,9 +15,9 @@ def main() -> None:
 
     cli = CommandLineInterface()
     try:
-        input_args = cli.get_init_data()
+        input_args = cli.get_user_data()
         manager = Manager(input_args)
-        manager.create_report()
+        manager.create_report_content()
     except Exception as e:
         print(e)
 

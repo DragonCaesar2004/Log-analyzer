@@ -52,3 +52,19 @@ class LogObject:
                 LogFields.HTTP_USER_AGENT.value,
                 match.group(LogFields.HTTP_USER_AGENT.value),
             )
+    
+    
+    def __eq__(self, other):
+        if not isinstance(other, LogObject):
+            return NotImplemented
+        
+        return (getattr(self, LogFields.IP_ADDR.value) == getattr(other, LogFields.IP_ADDR.value) and
+                getattr(self, LogFields.USER_NAME.value) == getattr(other, LogFields.USER_NAME.value) and
+                getattr(self, LogFields.LOCAL_TIME.value) == getattr(other, LogFields.LOCAL_TIME.value) and
+                getattr(self, LogFields.METHOD.value) == getattr(other, LogFields.METHOD.value) and
+                getattr(self, LogFields.RESOURCE.value) == getattr(other, LogFields.RESOURCE.value) and
+                getattr(self, LogFields.HTTP_VERSION.value) == getattr(other, LogFields.HTTP_VERSION.value) and
+                getattr(self, LogFields.STATUS_CODE.value) == getattr(other, LogFields.STATUS_CODE.value) and
+                getattr(self, LogFields.BODY_BYTES_SENT.value) == getattr(other, LogFields.BODY_BYTES_SENT.value) and
+                getattr(self, LogFields.HTTP_REFERER.value) == getattr(other, LogFields.HTTP_REFERER.value) and
+                getattr(self, LogFields.HTTP_USER_AGENT.value) == getattr(other, LogFields.HTTP_USER_AGENT.value))

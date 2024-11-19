@@ -61,7 +61,7 @@ class BaseReportCreator():
             for status_code, count in log_stats.status_code_frequency.items()
         ]
 
-    def create_report(self, generate_table_method, header_symb: str)->str:
+    def create_report_content(self, generate_table_method, header_symb: str)->str:
         content = f"{header_symb} Общая информация\n\n"
         # Добавление таблицы общей информации
         content += generate_table_method(

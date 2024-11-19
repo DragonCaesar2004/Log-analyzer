@@ -134,6 +134,4 @@ class ReadFileError(ValueError):
 
 class ConnectionError(Exception):
     def __init__(self, status_code: int):
-        super().__init__(f'(
-                    f"Получен неверный код состояния: {status_code}"
-                )')
+        super().__init__(f'Получен неверный код состояния: {status_code}')

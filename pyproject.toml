@@ -29,4 +29,8 @@ analyzer = "hello:hi"
 
 [tool.poetry.group.dev.dependencies]
 types-requests = "^2.32.0.20241016"
+pytest = "^8.3.3"
+pytest-cov = "^6.0.0"
 
+[tool.pytest.ini_options]
+addopts = "--cov=src --cov-report=term-missing"

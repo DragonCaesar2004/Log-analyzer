@@ -14,7 +14,7 @@ class Manager:
         self.input_args = input_args
         self.log_statistics_processor = LogStatisticsProcessor()
 
-    def create_report(self) -> None:
+    def create_report_content(self) -> None:
         for adress_type, adress_value in self.input_args.paths:
             match adress_type:
                 case AdressTypes.URL:
@@ -43,9 +43,10 @@ class Manager:
             case _:
                 assert_never(self.input_args.format)
         
-        content_file = report_creator.create_report(generate_table_method, header_symb)
+        content_file = report_creator.create_report_content(generate_table_method, header_symb)
 
         self._write_to_file(content_file, f"report.{self.input_args.format}")
+
 
     def _check_filter(self, log_object: LogObject) -> bool:
         conditions = []
