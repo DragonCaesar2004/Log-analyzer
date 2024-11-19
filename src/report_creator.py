@@ -1,3 +1,5 @@
+from typing import Callable
+
 from src.log_statistics_processor import LogStatistics
 from src.project_types import InputArgs
 from src.config import percentile_ratio
@@ -61,7 +63,7 @@ class BaseReportCreator():
             for status_code, count in log_stats.status_code_frequency.items()
         ]
 
-    def create_report_content(self, generate_table_method, header_symb: str)->str:
+    def create_report_content(self, generate_table_method:Callable, header_symb: str)->str:
         content = f"{header_symb} Общая информация\n\n"
         # Добавление таблицы общей информации
         content += generate_table_method(

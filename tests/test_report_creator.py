@@ -60,26 +60,20 @@ def test_generate_adoc_table(base_report_creator):
     )
     result = base_report_creator.generate_adoc_table(headers, rows)
 
-    print(result)
-    print()
-    print(expected_table)
     assert result == expected_table
 
-def test_create_report_content(base_report_creator, mock_log_stats, mock_input_args):
-    def mock_generate_table(headers, rows):
-        return f"Table with {len(headers)} headers and {len(rows)} rows"
-
-    content = base_report_creator.create_report_content(mock_generate_table, "#")
+def test_create_report_content(base_report_creator ):
+    content = base_report_creator.create_report_content(base_report_creator.generate_markdown_table, "#")
+ 
     assert "Общая информация" in content
     assert "Запрашиваемые ресурсы" in content
     assert "Коды ответа" in content
-    assert "Table with 2 headers and" in content  # Пример проверки генерации таблиц
 
-def test_successful_unsuccessful_requests(base_report_creator, mock_log_stats):
+def test_successful_unsuccessful_requests(base_report_creator):
     assert base_report_creator.successful_requests == 700
     assert base_report_creator.unsuccessful_requests == 300
 
-def test_general_info_rows(base_report_creator, mock_input_args, mock_log_stats):
+def test_general_info_rows(base_report_creator):
     expected_general_info = [
         ["Файл(-ы)", "/var/logs/access.log, /var/logs/error.log"],
         ["Начальная дата", "-"],

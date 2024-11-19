@@ -11,7 +11,7 @@ class LogObject:
         log_pattern = rf'''(?P<{LogFields.IP_ADDR.value}>\S+) - (?P<{LogFields.USER_NAME.value}>\S+) \[(?P<{LogFields.LOCAL_TIME.value}>.*?)\] "(?P<{LogFields.METHOD.value}>\S+) (?P<{LogFields.RESOURCE.value}>\S+) (?P<{LogFields.HTTP_VERSION.value}>[^"]+)" (?P<{LogFields.STATUS_CODE.value}>\d+) (?P<{LogFields.BODY_BYTES_SENT.value}>\d+) "(?P<{LogFields.HTTP_REFERER.value}>.*?)" "(?P<{LogFields.HTTP_USER_AGENT.value}>.*?)"'''
         match = re.match(log_pattern, log_string)
         if match:
-            # инициализация через setattr для синхронизации данных
+            # инициализация через setattr для синхронизации данных,
             setattr(self, LogFields.IP_ADDR.value, match.group(LogFields.IP_ADDR.value))
             setattr(
                 self, LogFields.USER_NAME.value, match.group(LogFields.USER_NAME.value)
@@ -54,9 +54,9 @@ class LogObject:
             )
     
     
-    def __eq__(self, other):
+    def __eq__(self, other:object)->bool:
         if not isinstance(other, LogObject):
-            return NotImplemented
+            raise TypeError(f"Нельзя сравнить LogObject с {type(other).__name__}")
         
         return (getattr(self, LogFields.IP_ADDR.value) == getattr(other, LogFields.IP_ADDR.value) and
                 getattr(self, LogFields.USER_NAME.value) == getattr(other, LogFields.USER_NAME.value) and
