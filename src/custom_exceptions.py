@@ -101,37 +101,38 @@ class DateOrderError(ValueError):  # Переименовать
 
 
 class EmptyArgumentError(ValueError):
-    """Вызывается, если значение фильтра пусто, ."""
+    """Вызывается, если значение фильтра пусто"""
 
     def __init__(self, flag: str):
         super().__init__(f"Ошибка: Вы указали пустой аргумент для флага {flag}")
 
 
 class MoreOneArgumentError(ValueError):
+    """Вызывается, флагу передано больше 1 аргумента"""
     def __init__(self, flag: str):
         super().__init__(f"Указано больше 1 аргумента для флага {flag}")
 
 
-class DeployFilePatternError(ValueError):
-    def __init__(self, file_pattern: str):
-        super().__init__(
-            f"Не удалось развернуть данный файловый шаблон: {file_pattern}"
-        )
-
+ 
 
 class NoFilesFoundError(Exception):
     """Исключение, которое возникает, когда не найдено ни одного файла по заданному шаблону."""
-
     def __init__(self, file_pattern: str):
         super().__init__(
             f"Не нашлось ни одного файла по заданному шаблону {file_pattern}"
         )
 
-
 class ReadFileError(ValueError):
+    """Вызывается, если произошла ошибка при чтении файла логов"""
     def __init__(self):
         super().__init__("Произошла ошибка при чтении файла логов")
 
 class ConnectionError(Exception):
+    """Вызывается, если сервер, на котором хранятся логи, вернул ошибочный статус-код"""
     def __init__(self, status_code: int):
         super().__init__(f'Получен неверный код состояния: {status_code}')
+
+class LogNotMatchError(ValueError):
+    """Вызывается, если cтрока лога не соответствует ожидаемому формату"""
+    def __init__(self, log_string):
+        super().__init__(f"Строка лога не соответствует ожидаемому формату: {log_string}")

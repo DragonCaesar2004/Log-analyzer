@@ -5,6 +5,11 @@ import urllib.parse
 import re
 from datetime import datetime
 from typing import Optional
+from glob import glob
+
+from src.user_interfaces.base_user_interface import UserInterface
+from src.project_types import InputArgs, AdressTypes, FormatTypes
+from src.config import LogFields, one_argument_flags,description
 from src.custom_exceptions import (
     NoFilesFoundError,
     UnknownArgumentsError,
@@ -19,18 +24,18 @@ from src.custom_exceptions import (
     EmptyFilterValueError,
     EmptyArgumentError,
     MoreOneArgumentError,
-    DeployFilePatternError,
+     
 )
-from glob import glob
 
-from src.user_interfaces.base_user_interface import UserInterface
-from src.project_types import InputArgs, AdressTypes, FormatTypes
-from src.config import LogFields, one_argument_flags,description
 
 
 class CommandLineInterface(UserInterface):
-
+    '''
+    Этот класс реализует интерфейс командной строки (CLI) для работы с логами. Он включает 
+    в себя обработку входных аргументов, валидацию их значений и конвертацию в структуру данных для дальнейшей обработки. 
+    '''
     def __init__(self)->None:
+        '''Инициализирует парсер аргументов командной строки, добавляя параметры для анализа'''
         self.parser = argparse.ArgumentParser(
             prog="Анализатор логов", description=description,formatter_class=argparse.RawDescriptionHelpFormatter  
         )
@@ -57,17 +62,18 @@ class CommandLineInterface(UserInterface):
 
     def get_user_data(self) -> InputArgs:
         """
-        Анализирует и проверяет аргументы командной строки.
-
-        :raises UnknownArgumentsError: Если переданы неизвестные аргументы.
-        :raises MissingPathError: Если отсутствует обязательный аргумент -p / --path: URL или адрес локального файла.
-        :raises InvalidPathError: Если путь не может быть распознан как файл или URL.
-        :raises InvalidDateFormatError: Если формат даты неверный.
-        :raises InvalidDateValueError: Если значение даты некорректно.
-        :raises InvalidFormatStyleError: Если указан неизвестный формат стиля.
-        :raises InvalidFilterFieldError: Если указано неизвестное поле фильтрации.
-        :raises MissingFilterFieldError: Если значение фильтра указано без поля.
-        :raises EmptyFilterValueError: Если значение фильтра пусто.
+        Извлекает и проверяет аргументы командной строки, возвращая их в формате `InputArgs`.
+        Ошибки:
+            - UnknownArgumentsError: Если переданы неизвестные аргументы.
+            - MissingPathError: Если отсутствует обязательный аргумент `-p` или `--path`.
+            - InvalidPathError: Если путь не распознается как URL или локальный файл.
+            - InvalidDateFormatError: Если формат даты не соответствует `YYYY-MM-DDThh:mm:ss`.
+            - InvalidDateValueError: Если значение даты некорректно.
+            - InvalidFormatStyleError: Если указан неизвестный стиль формата.
+            - InvalidFilterFieldError: Если указано неизвестное поле фильтрации.
+            - MissingFilterFieldError: Если значение фильтра задано без указания поля.
+            - EmptyFilterValueError: Если значение фильтра пустое.
+            - DateOrderError: Если начальная дата позже конечной.
         """
 
         args, unknown_args = self.parser.parse_known_args()
@@ -111,11 +117,21 @@ class CommandLineInterface(UserInterface):
         )
 
     def _validate_unknown_args(self, unknown_args: list[str]) -> None:
-        """Проверяет наличие неизвестных аргументов"""
+        """  
+        Проверяет наличие неизвестных аргументов.
+        Ошибки:
+            - UnknownArgumentsError: Если найдены неизвестные аргументы.
+        """
         if len(unknown_args):
             raise UnknownArgumentsError(unknown_args)
 
     def _deploy_file_paths(self, paths: list[str])-> list[str]:
+        '''
+        Разворачивает пути из паттернов файлов.
+        Ошибки:
+            - NoFilesFoundError: Если файлы по шаблону не найдены.
+             
+        '''
         urls = []
         files = []
         file_patterns = []
@@ -125,23 +141,30 @@ class CommandLineInterface(UserInterface):
                 urls.append(path)
             else:
                 file_patterns.append(path)
-
+         
         for file_pattern in file_patterns:
             try:
                 deployed_files = glob(file_pattern, recursive=True)
-                if len(deployed_files) == 0:
-                    raise NoFilesFoundError(file_pattern)
+                if  len(deployed_files) == 0:
+                    raise ValueError
                 files += deployed_files
 
-            except Exception as e:
-                raise DeployFilePatternError(file_pattern) from e
+            except ValueError as e:
+                raise NoFilesFoundError(file_pattern) from e
+
 
         return files + urls
 
     def _validate_path(self, paths: list[str]) -> list[tuple[AdressTypes, str]]:
-        """Разделяет на 2 списка url и файлы. Возвращает их
+        """
+        Проверяет корректность и тип указанных путей (файл или URL).
         Эта функция предназначена для проверки, является ли заданный путь URL-адресом,
-        имеющим допустимый протокол."""
+        имеющим допустимый протокол.
+                
+        Ошибки:
+            - MissingPathError: Если пути отсутствуют.
+            - InvalidPathError: Если путь не является ни файлом, ни URL.
+        """
          
         if not paths:
             raise MissingPathError()
@@ -166,7 +189,12 @@ class CommandLineInterface(UserInterface):
         return parsed.scheme in ["http", "https"]
 
     def _validate_datetime_string(self, date_list: list[str]) -> datetime:
-        """Проверяет, что введеная дата соответствует формату YYYY-MM-DDThh:mm:ss и является валидной"""
+        """
+        Проверяет, что введеная дата соответствует формату YYYY-MM-DDThh:mm:ss и является валидной
+        Ошибки:
+            - InvalidDateFormatError: Если формат даты некорректен.
+            - InvalidDateValueError: Если значение даты не распознается.
+        """
 
         date_string = date_list[0]
         pattern = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$")
@@ -178,7 +206,11 @@ class CommandLineInterface(UserInterface):
             raise InvalidDateValueError()
 
     def _validate_format_style(self, format: str) -> FormatTypes:
-        """Проверяет на наличие введеного формата в списке доступных стилей"""
+        """
+        Проверяет на наличие введеного формата в списке доступных стилей
+        Ошибки:
+            - InvalidFormatStyleError: Если формат не поддерживается.
+        """
         if format is None:
             return FormatTypes.MARKDOWN.value # Markdown значение по умолчанию
         format_str = format[0]
@@ -188,7 +220,11 @@ class CommandLineInterface(UserInterface):
         return FormatTypes(format_str)
 
     def _validate_filter_field(self, filter_field: str) ->LogFields:
-        """Проверяет на наличие введеного фильтра в списке всех полей лога"""
+        """
+        Проверяет на наличие введеного фильтра в списке всех полей лога
+        Ошибки:
+            - InvalidFilterFieldError: Если поле не поддерживается.
+        """
         filter_field_str = filter_field[0]
         if filter_field_str not in LogFields:
             raise InvalidFilterFieldError(LogFields)
@@ -197,7 +233,12 @@ class CommandLineInterface(UserInterface):
     def _validate_filter_value(
         self, filter_field: Optional[LogFields], filter_value: list[str]
     ) -> list[str]:
-        """Проверка наличия значения у поля"""
+        """
+        Проверка наличия значения у поля
+        Ошибки:
+            - MissingFilterFieldError: Если указано значение фильтра без поля.
+            - EmptyFilterValueError: Если значение фильтра пустое.
+        """
         if filter_field is None and filter_value is None:
             return None
         if filter_value is None:
@@ -209,16 +250,19 @@ class CommandLineInterface(UserInterface):
 
     def _validate_date_order(self, start_date: Optional[datetime], end_date: Optional[datetime])->None:
         """
-        Проверяет, что start_date раньше end_date.
-
-        :param start_date: Начальная дата.
-        :param end_date: Конечная дата.
-        :raises DateOrderError: Если start_date позже или равна end_date.
+        Проверяет, что начальная дата from_date раньше или равна конечной to_date.
+        Ошибки:
+            - DateOrderError: Если начальная дата позже конечной.
         """
         if start_date and end_date and start_date > end_date:
             raise DateOrderError()
 
     def _check_missing_params(self, args: argparse.Namespace) -> None:
+        '''
+        Проверяет, что у всех переданных аргументов есть значения.
+        Ошибки:
+            - EmptyArgumentError: Если аргумент задан, но пуст.
+        '''
         for arg_name, arg_value in vars(args).items():
             if arg_value is None:
                 continue
@@ -226,6 +270,11 @@ class CommandLineInterface(UserInterface):
                 raise EmptyArgumentError(arg_name)
 
     def _check_one_argument(self, args: argparse.Namespace)-> None:
+        '''
+        Проверяет, что для флагов, допускающих одно значение, передано не больше одного значения.
+        Ошибки:
+            - MoreOneArgumentError: Если передано больше одного значения.
+        '''
         for arg_name, arg_value in vars(args).items():
             if arg_value is None:
                 continue

@@ -6,8 +6,22 @@ from src.config import percentile_ratio
 
 
 class BaseReportCreator():
-
+    '''
+        BaseReportCreator отвечает за создание содержимого отчета 
+        на основе предоставленных аргументов ввода и статистики журналов.
+    '''
     def __init__(self, input_args: InputArgs, log_stats: LogStatistics)->None:
+
+        """
+        Инициализирует BaseReportCreator с заданными входными аргументами и статистикой журналов.
+
+        Аргументы:
+            input_args (InputArgs): Входные аргументы, содержащие пути и параметры фильтрации.
+            log_stats (LogStatistics): Статистика журналов, включающая частоту статусов, ресурсы и другие метрики.
+
+        Возвращает:
+            None
+        """
         self.general_info_headers = ["Метрика", "Значение"]
 
         # Извлечение адресов из входных аргументов
@@ -64,6 +78,18 @@ class BaseReportCreator():
         ]
 
     def create_report_content(self, generate_table_method:Callable, header_symb: str)->str:
+        '''
+        Создает содержимое отчета, включая общую информацию, запрашиваемые ресурсы и коды ответа.
+
+        Аргументы:
+            generate_table_method (Callable): Метод для генерации таблиц (например, метод для Markdown или AsciiDoc).
+
+                    header_symb (str): Символы для обозначения заголовков (например, "####" для Markdown).
+
+        Возвращает:
+            str: Содержимое отчета в виде строки.
+        '''
+
         content = f"{header_symb} Общая информация\n\n"
         # Добавление таблицы общей информации
         content += generate_table_method(
@@ -77,6 +103,13 @@ class BaseReportCreator():
 
     @staticmethod
     def generate_markdown_table(headers: list[str], rows: list[list[str]]) -> str:
+        """
+        Генерация таблицы в формате Markdown.
+
+        :param headers: Список заголовков столбцов.
+        :param rows: Список строк таблицы, каждая строка — список значений ячеек.
+        :return: Строка с таблицей в формате Asciidoc.
+        """
         # Форматирование заголовков таблицы
         header_row = "| " + " | ".join(headers) + " |"
         separator_row = (

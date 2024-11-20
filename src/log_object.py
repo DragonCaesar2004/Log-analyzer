@@ -2,7 +2,7 @@ import re
 from datetime import datetime
 
 from src.config import LogFields
-
+from src.custom_exceptions import LogNotMatchError
 
 class LogObject:
 
@@ -52,10 +52,16 @@ class LogObject:
                 LogFields.HTTP_USER_AGENT.value,
                 match.group(LogFields.HTTP_USER_AGENT.value),
             )
-    
+        else:
+            raise LogNotMatchError(log_string)
     
     def __eq__(self, other:object)->bool:
+        '''
+        Данный dunder метод определён для сравненния логов по их соответствующим артриутам.
+        Он необходим только для тестирования
+        '''
         if not isinstance(other, LogObject):
+            '''Если объекты сравнения имеют разный тип, сразу выкидываем исключение'''
             raise TypeError(f"Нельзя сравнить LogObject с {type(other).__name__}")
         
         return (getattr(self, LogFields.IP_ADDR.value) == getattr(other, LogFields.IP_ADDR.value) and

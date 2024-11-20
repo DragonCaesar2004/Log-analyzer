@@ -8,7 +8,7 @@ from src.parsers.file_parser import file_log_stream
 def test_file_log_stream_success():
     # Создаем тестовые данные
     mock_data = '''178.30.216.251 - - [09/Nov/2024:15:08:29 +0000] "GET /structure.js HTTP/1.1" 200 2115 "-" "Mozilla/5.0 (Windows; U; Windows NT 6.2) AppleWebKit/531.11.7 (KHTML, like Gecko) Version/5.2 Safari/531.11.7"\n
-183.75.122.0 - - [09/Nov/2024:15:08:30 +0000] "GET /data-warehouse-Synchronised/optimal/initiative-monitoring.png HTTP/1.1" 200 952 "-" "Mozilla/5.0 (X11; Linux x86_64; rv:7.0) Gecko/1962-29-04 Firefox/36.0"'''
+    183.75.122.0 - - [09/Nov/2024:15:08:30 +0000] "GET /data-warehouse-Synchronised/optimal/initiative-monitoring.png HTTP/1.1" 200 952 "-" "Mozilla/5.0 (X11; Linux x86_64; rv:7.0) Gecko/1962-29-04 Firefox/36.0"'''
 
 
     # Используем mock_open для имитации открытия файла
