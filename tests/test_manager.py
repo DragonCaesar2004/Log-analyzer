@@ -17,7 +17,7 @@ def input_args():
         to_date=datetime(2023, 12, 31, 11, 11, 11),
         filter_field=LogFields.STATUS_CODE,
         filter_value=[200, 404],
-        format=FormatTypes.MARKDOWN.value,
+        format=FormatTypes.MARKDOWN,
     )
 
 

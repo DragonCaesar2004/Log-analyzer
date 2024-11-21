@@ -214,7 +214,7 @@ class CommandLineInterface(UserInterface):
         format_str = format[0]
 
         if format_str not in FormatTypes:
-            raise InvalidFormatStyleError([format.value for format in FormatTypes])
+            raise InvalidFormatStyleError()
         return FormatTypes(format_str)
 
     def _validate_filter_field(self, filter_field: str) -> LogFields:

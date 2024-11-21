@@ -13,7 +13,7 @@ def mock_input_args():
         from_date=None,
         to_date=None,
         format="md",
-        filter_field=LogFields.METHOD.value,
+        filter_field=LogFields.METHOD,
         filter_value="GET",
     )
 

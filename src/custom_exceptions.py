@@ -1,6 +1,6 @@
 import requests
 from typing import Iterable
-from src.project_types import LogFields
+from src.project_types import LogFields, FormatTypes
 
 
 class UnknownArgumentsError(Exception):
@@ -47,9 +47,9 @@ class InvalidDateValueError(ValueError):
 class InvalidFormatStyleError(ValueError):
     """Вызывается, если указан неизвестный формат стиля."""
 
-    def __init__(self, allowed_formats: list[str]) -> None:
+    def __init__(self) -> None:
         super().__init__(
-            f"Ошибка: выберите один из следующих форматов: {', '.join(allowed_formats)}"
+            f"Ошибка: выберите один из следующих форматов: {', '.join([format_type.value for format_type in FormatTypes])}"
         )
 
 

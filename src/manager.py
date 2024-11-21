@@ -44,6 +44,7 @@ class Manager:
             IOError: Если возникает проблема при записи в файл.
 
         """
+
         for adress_type, adress_value in self.input_args.paths:
             match adress_type:
                 case AdressTypes.URL:
@@ -61,11 +62,11 @@ class Manager:
 
         report_creator = BaseReportCreator(self.input_args, log_statistics)
         match self.input_args.format:
-            case FormatTypes.MARKDOWN.value:
+            case FormatTypes.MARKDOWN:
                 generate_table_method = BaseReportCreator.generate_markdown_table
                 header_symb = "####"
 
-            case FormatTypes.ADOC.value:
+            case FormatTypes.ADOC:
                 generate_table_method = BaseReportCreator.generate_adoc_table
                 header_symb = "===="
 
@@ -105,7 +106,7 @@ class Manager:
 
         if self.input_args.filter_field:
             filter_match = [
-                filter_value == getattr(log_object, self.input_args.filter_field.value)
+                filter_value == getattr(log_object, self.input_args.filter_field)
                 for filter_value in self.input_args.filter_value
             ]
             conditions.append(any(filter_match))
