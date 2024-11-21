@@ -17,7 +17,8 @@ class Manager:
         input_args (InputArgs): Входные аргументы, содержащие пути, формат и параметры фильтрации.
         log_statistics_processor (LogStatisticsProcessor): Процессор для вычисления статистики журналов.
     """
-    def __init__(self, input_args: InputArgs)-> None:
+
+    def __init__(self, input_args: InputArgs) -> None:
         self.input_args = input_args
         self.log_statistics_processor = LogStatisticsProcessor()
 
@@ -55,9 +56,9 @@ class Manager:
             for log_object in log_stream(adress_value):
                 if self._check_filter(log_object):
                     self.log_statistics_processor.calculate_statistics(log_object)
-        
+
         log_statistics = self.log_statistics_processor.get_statistics()
-        
+
         report_creator = BaseReportCreator(self.input_args, log_statistics)
         match self.input_args.format:
             case FormatTypes.MARKDOWN.value:
@@ -70,15 +71,15 @@ class Manager:
 
             case _:
                 assert_never(self.input_args.format)
-        
-        content_file = report_creator.create_report_content(generate_table_method, header_symb)
+
+        content_file = report_creator.create_report_content(
+            generate_table_method, header_symb
+        )
 
         self._write_to_file(content_file, f"report.{self.input_args.format}")
 
-
     def _check_filter(self, log_object: LogObject) -> bool:
-
-        '''
+        """
         Определяет, соответствует ли данный объект журнала критериям фильтрации, указанным в input_args.
 
         Критерии фильтрации:
@@ -93,7 +94,7 @@ class Manager:
 
         Вызывает:
             AttributeError: Если указанное поле фильтра не существует в LogObject.
-        '''
+        """
         conditions = []
 
         if self.input_args.from_date:
@@ -111,8 +112,8 @@ class Manager:
 
         return all(conditions)
 
-    def _write_to_file(self, content: str, filename: str)->None:
-        '''
+    def _write_to_file(self, content: str, filename: str) -> None:
+        """
         Записывает предоставленное содержимое в файл с указанным именем.
 
         Аргументы:
@@ -124,7 +125,7 @@ class Manager:
 
         Вызывает:
             IOError: Если файл не может быть открыт или записан.
-        '''
+        """
         try:
             with open(filename, "w", encoding="utf-8") as file:
                 file.write(content)

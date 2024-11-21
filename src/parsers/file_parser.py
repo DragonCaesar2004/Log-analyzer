@@ -18,11 +18,8 @@ def file_log_stream(path: str) -> Generator[LogObject, None, None]:
     try:
         # Открываем файл в режиме чтения с указанием кодировки UTF-8
         with open(path, "r", encoding="utf-8") as file:
-    
             for line in file:
-                if (
-                    line.strip()
-                ):  
+                if line.strip():
                     yield LogObject(line.strip())
     except Exception as e:
-         raise ReadFileError() from e
+        raise ReadFileError from e

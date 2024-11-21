@@ -17,10 +17,10 @@ from src.custom_exceptions import (
     EmptyArgumentError,
     MoreOneArgumentError,
     NoFilesFoundError,
-     
 )
 
-@pytest.fixture(scope = 'session')
+
+@pytest.fixture(scope="session")
 def cli():
     """Фикстура для создания экземпляра CommandLineInterface."""
     return CommandLineInterface()
@@ -33,21 +33,45 @@ def test_validate_unknown_args(cli):
 
 def test_deploy_correct_file_paths(cli, mocker):
     # Успешное выполнение
-    mocker.patch("src.user_interfaces.command_line_interface.glob", return_value=["file1.log", "file2.log"])
-    paths = cli._deploy_file_paths(["file*.log"])
-    assert paths == ["file1.log", "file2.log"]
+    mocker.patch(
+        "src.user_interfaces.command_line_interface.glob",
+        return_value=["file1.log", "file2.log"],
+    )
+    paths = cli._deploy_file_paths(
+        [
+            "file*.log",
+            "https://raw.githubusercontent.com/elastic/examples/master/Common%20Data%20Formats/nginx_logs/nginx_logs",
+        ]
+    )
+    assert paths == [
+        "file1.log",
+        "file2.log",
+        "https://raw.githubusercontent.com/elastic/examples/master/Common%20Data%20Formats/nginx_logs/nginx_logs",
+    ]
+
 
 def test_deploy_wrong_file_paths(cli, mocker):
     # Ошибка: нет файлов по шаблону
     mocker.patch("src.user_interfaces.command_line_interface.glob", return_value=[])
-    with pytest.raises(NoFilesFoundError) :
+    with pytest.raises(NoFilesFoundError):
         cli._deploy_file_paths(["not_exist*.log"])
- 
+
 
 def test_validate_path(cli, mocker):
     mocker.patch("os.path.isfile", return_value=True)
-    paths = cli._validate_path(["file.log"])
-    assert paths == [(AdressTypes.FILE, "file.log")]
+    paths = cli._validate_path(
+        [
+            "file.log",
+            "https://raw.githubusercontent.com/elastic/examples/master/Common%20Data%20Formats/nginx_logs/nginx_logs",
+        ]
+    )
+    assert paths == [
+        (AdressTypes.FILE, "file.log"),
+        (
+            AdressTypes.URL,
+            "https://raw.githubusercontent.com/elastic/examples/master/Common%20Data%20Formats/nginx_logs/nginx_logs",
+        ),
+    ]
 
     mocker.patch("os.path.isfile", return_value=False)
     with pytest.raises(InvalidPathError):
@@ -69,7 +93,9 @@ def test_validate_datetime_string(cli):
 def test_validate_format_style(cli):
     assert cli._validate_format_style(["md"]) == FormatTypes.MARKDOWN
     assert cli._validate_format_style(["adoc"]) == FormatTypes.ADOC
-
+    assert (
+        cli._validate_format_style(None) == FormatTypes.MARKDOWN
+    )  # так как это значение по умолчанию
     with pytest.raises(InvalidFormatStyleError):
         cli._validate_format_style(["INVALID_FORMAT"])
 
@@ -91,8 +117,10 @@ def test_validate_filter_field(cli):
 
 
 def test_validate_filter_value(cli):
-    assert cli._validate_filter_value(LogFields.LOCAL_TIME, ['17/May/2015:08:05:09','22/May/2015:08:05:09']) == ['17/May/2015:08:05:09','22/May/2015:08:05:09']
-
+    assert cli._validate_filter_value(
+        LogFields.LOCAL_TIME, ["17/May/2015:08:05:09", "22/May/2015:08:05:09"]
+    ) == ["17/May/2015:08:05:09", "22/May/2015:08:05:09"]
+    assert cli._validate_filter_value(None, None) is None
     with pytest.raises(EmptyFilterValueError):
         cli._validate_filter_value(LogFields.LOCAL_TIME, None)
 
@@ -106,25 +134,30 @@ def test_validate_date_order(cli):
     assert cli._validate_date_order(start_date=start_date, end_date=end_date) is None
 
     with pytest.raises(DateOrderError):
-        cli._validate_date_order(start_date=end_date, end_date = start_date)
+        cli._validate_date_order(start_date=end_date, end_date=start_date)
 
 
 def test_check_missing_params(cli):
-    args = argparse.Namespace(path=["file.log"], from_date=None) # Если не указывали флаг
+    args = argparse.Namespace(
+        path=["file.log"], from_date=None
+    )  # Если не указывали флаг
     assert cli._check_missing_params(args) is None
 
-    args = argparse.Namespace(path=["file.log"], from_date=[]) # Если указали флаг
+    args = argparse.Namespace(path=["file.log"], from_date=[])  # Если указали флаг
     with pytest.raises(EmptyArgumentError):
         cli._check_missing_params(args)
 
 
 def test_check_one_argument(cli):
-    args = argparse.Namespace(path=["file.log"], format=["md"])
-    assert cli._check_one_argument(args) is None 
+    args = argparse.Namespace(
+        path=["file.log"], format=["md"], from_date=None, to_date=None
+    )
+    assert cli._check_one_argument(args) is None
 
     args = argparse.Namespace(path=["file.log"], format=["md", "adoc"])
     with pytest.raises(MoreOneArgumentError):
         cli._check_one_argument(args)
+
 
 def test_is_file(cli, mocker):
     mocker.patch("os.path.isfile", return_value=True)
@@ -149,16 +182,24 @@ def test_get_user_data(cli, mocker):
         to_date=None,
         format=["md"],
         filter_field=["method"],
-        filter_value=['GET'],
+        filter_value=["GET"],
     )
-    mocker.patch("argparse.ArgumentParser.parse_known_args", return_value=(mock_args, []))
+    mocker.patch(
+        "argparse.ArgumentParser.parse_known_args", return_value=(mock_args, [])
+    )
     mocker.patch.object(cli, "_validate_args", return_value=mock_args)
-    
+
     result = cli.get_user_data()
     assert result.path == mock_args.path
-    print(result.from_date[0])
-    print(datetime.strptime("2023-11-20T10:30:00", "%Y-%m-%dT%H:%M:%S"))
-    assert result.from_date[0] == datetime.strptime("2023-11-20T10:30:00", "%Y-%m-%dT%H:%M:%S")
+    assert result.from_date[0] == datetime.strptime(
+        "2023-11-20T10:30:00", "%Y-%m-%dT%H:%M:%S"
+    )
+
+
+def test_missing_requiered_path(cli):
+    """Проверяем отсутствие обязательного пути"""
+    with pytest.raises(MissingPathError):
+        cli._validate_path(None)
 
 
 def test_validate_args(cli, mocker):
@@ -175,11 +216,20 @@ def test_validate_args(cli, mocker):
     mocker.patch.object(cli, "_check_missing_params")
     mocker.patch.object(cli, "_check_one_argument")
     mocker.patch.object(cli, "_deploy_file_paths", return_value=["http://example.com"])
-    mocker.patch.object(cli, "_validate_path", return_value=[(AdressTypes.URL, "http://example.com")])
-    mocker.patch.object(cli, "_validate_datetime_string", side_effect=[
-        datetime(2023, 11, 20, 10, 30, 0), datetime(2023, 11, 21, 10, 30, 0)
-    ])
-    mocker.patch.object(cli, "_validate_format_style", return_value=FormatTypes.MARKDOWN)
+    mocker.patch.object(
+        cli, "_validate_path", return_value=[(AdressTypes.URL, "http://example.com")]
+    )
+    mocker.patch.object(
+        cli,
+        "_validate_datetime_string",
+        side_effect=[
+            datetime(2023, 11, 20, 10, 30, 0),
+            datetime(2023, 11, 21, 10, 30, 0),
+        ],
+    )
+    mocker.patch.object(
+        cli, "_validate_format_style", return_value=FormatTypes.MARKDOWN
+    )
     mocker.patch.object(cli, "_validate_filter_field", return_value=LogFields.METHOD)
     mocker.patch.object(cli, "_validate_filter_value", return_value=["GET"])
 
@@ -190,8 +240,3 @@ def test_validate_args(cli, mocker):
     assert result.format == FormatTypes.MARKDOWN
     assert result.filter_field == LogFields.METHOD
     assert result.filter_value == ["GET"]
-
-
- 
-
- 

@@ -34,3 +34,19 @@ pytest-cov = "^6.0.0"
 
 [tool.pytest.ini_options]
 addopts = "--cov=src --cov-report=term-missing"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D203",    # Не совместимо с другими линтами
+    "D212",    # Делает докстринги некрасивыми 
+    "COM812",  # Не совместимо с форматтером
+    "ISC001",  # Может конфликтовать с форматтером
+    "RUF002",  # Кириллица в докстрингах
+   ]
+
+ 

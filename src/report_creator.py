@@ -5,13 +5,13 @@ from src.project_types import InputArgs
 from src.config import percentile_ratio
 
 
-class BaseReportCreator():
-    '''
-        BaseReportCreator отвечает за создание содержимого отчета 
-        на основе предоставленных аргументов ввода и статистики журналов.
-    '''
-    def __init__(self, input_args: InputArgs, log_stats: LogStatistics)->None:
+class BaseReportCreator:
+    """
+    BaseReportCreator отвечает за создание содержимого отчета
+    на основе предоставленных аргументов ввода и статистики журналов.
+    """
 
+    def __init__(self, input_args: InputArgs, log_stats: LogStatistics) -> None:
         """
         Инициализирует BaseReportCreator с заданными входными аргументами и статистикой журналов.
 
@@ -29,10 +29,14 @@ class BaseReportCreator():
 
         # Расчет успешных и неуспешных запросов
         self.successful_requests = sum(
-            count for status, count in log_stats.status_code_frequency.items() if 200 <= status < 300
+            count
+            for status, count in log_stats.status_code_frequency.items()
+            if 200 <= status < 300
         )
         self.unsuccessful_requests = sum(
-            count for status, count in log_stats.status_code_frequency.items() if not (200 <= status < 300)
+            count
+            for status, count in log_stats.status_code_frequency.items()
+            if not (200 <= status < 300)
         )
 
         # Подготовка строк для таблицы общей информации
@@ -55,8 +59,14 @@ class BaseReportCreator():
                 ),
             ],
             ["Количество запросов", f"{log_stats.logs_count:,}".replace(",", "_")],
-            ["Средний размер ответа", f"{str(log_stats.average_response_size)+'b' if log_stats.average_response_size>=0 else '-'}"],
-            [f"{percentile_ratio*100}p размера ответа", f"{str(log_stats.percentile) +'b' if log_stats.percentile>=0 else '-' }"],
+            [
+                "Средний размер ответа",
+                f"{str(log_stats.average_response_size)+'b' if log_stats.average_response_size>=0 else '-'}",
+            ],
+            [
+                f"{percentile_ratio*100}p размера ответа",
+                f"{str(log_stats.percentile) +'b' if log_stats.percentile>=0 else '-' }",
+            ],
             [
                 "Соотношение успешных запросов к общему количеству",
                 f"{self.successful_requests} успешных / {log_stats.logs_count} всего",
@@ -77,8 +87,10 @@ class BaseReportCreator():
             for status_code, count in log_stats.status_code_frequency.items()
         ]
 
-    def create_report_content(self, generate_table_method:Callable, header_symb: str)->str:
-        '''
+    def create_report_content(
+        self, generate_table_method: Callable, header_symb: str
+    ) -> str:
+        """
         Создает содержимое отчета, включая общую информацию, запрашиваемые ресурсы и коды ответа.
 
         Аргументы:
@@ -88,7 +100,7 @@ class BaseReportCreator():
 
         Возвращает:
             str: Содержимое отчета в виде строки.
-        '''
+        """
 
         content = f"{header_symb} Общая информация\n\n"
         # Добавление таблицы общей информации
@@ -143,6 +155,3 @@ class BaseReportCreator():
         # Закрытие таблицы
         table += "|==="
         return table
-
-
- 
